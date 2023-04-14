@@ -9,10 +9,10 @@ export const handler: Handlers<undefined, State> = {
     }
 
     let opponent;
-    if (req.method === "POST") {
-      const formData = await req.formData();
-      opponent = formData.get("opponent");
-    } else {
+    const formData = await req.formData();
+    opponent = formData.get("opponent");
+
+    if (typeof opponent !== "string") {
       const url = new URL(req.url);
       opponent = url.searchParams.get("opponent");
     }
@@ -20,6 +20,7 @@ export const handler: Handlers<undefined, State> = {
     if (typeof opponent !== "string") {
       return new Response("Missing or invalid opponent", { status: 400 });
     }
+
     if (opponent.startsWith("@")) {
       opponent = opponent.slice(1);
     }
