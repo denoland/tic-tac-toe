@@ -72,6 +72,7 @@ export async function setGame(game: Game, versionstamp?: string) {
     .set(["games_by_user", game.opponent.id, game.id], game)
     .commit();
   if (res) {
+    console.log("broadcasting game update", game.id, res.versionstamp);
     const bc1 = new BroadcastChannel(`game/${game.id}`);
     bc1.postMessage({ game, versionstamp: res!.versionstamp });
     bc1.close();
@@ -120,7 +121,13 @@ export function subscribeGame(
     }
   });
   bc.onmessage = (ev) => {
-    if (ev.data.versionstamp <= lastVersionstamp) return;
+    console.log(
+      "received game update",
+      id,
+      ev.data.versionstamp,
+      `(last: ${lastVersionstamp})`,
+    );
+    if (lastVersionstamp >= ev.data.versionstamp) return;
     cb(ev.data.game);
   };
   return () => {
@@ -141,6 +148,12 @@ export function subscribeGamesByPlayer(
     const lastVersionstamps = new Map<string, string>();
     bc.onmessage = (e) => {
       const { game, versionstamp } = e.data;
+      console.log(
+        "received games_by_user update",
+        game.id,
+        versionstamp,
+        `(last: ${lastVersionstamps.get(game.id)})`,
+      );
       if ((lastVersionstamps.get(game.id) ?? "") >= versionstamp) return;
       lastVersionstamps.set(game.id, versionstamp);
       for (let i = 0; i < list.length; i++) {
