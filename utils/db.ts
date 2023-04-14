@@ -75,13 +75,15 @@ export async function setGame(game: Game, versionstamp?: string) {
     console.log("broadcasting game update", game.id, res.versionstamp);
     const bc1 = new BroadcastChannel(`game/${game.id}`);
     bc1.postMessage({ game, versionstamp: res!.versionstamp });
-    bc1.close();
     const bc2 = new BroadcastChannel(`games_by_user/${game.initiator.id}`);
     bc2.postMessage({ game, versionstamp: res!.versionstamp });
-    bc2.close();
     const bc3 = new BroadcastChannel(`games_by_user/${game.opponent.id}`);
     bc3.postMessage({ game, versionstamp: res!.versionstamp });
-    bc3.close();
+    setTimeout(() => {
+      bc1.close();
+      bc2.close();
+      bc3.close();
+    }, 5);
   }
   return res !== null;
 }
