@@ -71,7 +71,7 @@ export async function setGame(game: Game, versionstamp?: string) {
     .set(["games_by_user", game.initiator.id, game.id], game)
     .set(["games_by_user", game.opponent.id, game.id], game)
     .commit();
-  if (res) {
+  if (res.ok) {
     console.log("broadcasting game update", game.id, res.versionstamp);
     const bc1 = new BroadcastChannel(`game/${game.id}`);
     bc1.postMessage({ game, versionstamp: res!.versionstamp });
@@ -85,7 +85,7 @@ export async function setGame(game: Game, versionstamp?: string) {
       bc3.close();
     }, 5);
   }
-  return res !== null;
+  return res.ok;
 }
 
 export async function listGamesByPlayer(userId: string): Promise<Game[]> {
