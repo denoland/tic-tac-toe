@@ -1,17 +1,13 @@
 import { Handlers } from "$fresh/server.ts";
-import { getSessionTokens, handleCallback } from "kv_oauth";
+import { handleCallback } from "kv_oauth";
 import { client } from "🛠️/kv_oauth.ts";
 import { getAuthenticatedUser } from "🛠️/github.ts";
 import { setUserWithSession } from "🛠️/db.ts";
 import type { User } from "🛠️/types.ts";
-import { getSetCookies } from "$std/http/cookie.ts";
 
 export const handler: Handlers = {
   async GET(req) {
-    const resp = await handleCallback(req, client);
-    const [{ value: session }] = getSetCookies(resp.headers);
-
-    const tokens = await getSessionTokens(session);
+    const { response, tokens, sessionId } = await handleCallback(req, client);
     const ghUser = await getAuthenticatedUser(tokens!.accessToken);
 
     const user: User = {
@@ -20,8 +16,8 @@ export const handler: Handlers = {
       name: ghUser.name,
       avatarUrl: ghUser.avatar_url,
     };
-    await setUserWithSession(user, session);
+    await setUserWithSession(user, sessionId);
 
-    return resp;
+    return response;
   },
 };

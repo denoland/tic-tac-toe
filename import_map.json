@@ -13,6 +13,6 @@
     "twind": "https://esm.sh/twind@0.16.17",
     "twind/": "https://esm.sh/twind@0.16.17/",
     "$std/": "https://deno.land/std@0.175.0/",
-    "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.1.5-beta/mod.ts"
+    "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.1.6-beta/mod.ts"
   }
 }
