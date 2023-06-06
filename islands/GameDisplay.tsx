@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 import { tw } from "twind";
 
 import { Game, User } from "🛠️/types.ts";

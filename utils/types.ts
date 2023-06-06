@@ -1,5 +1,5 @@
 export interface State {
-  session: string | undefined;
+  session: string | null;
 }
 
 export interface User {

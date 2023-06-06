@@ -12,7 +12,7 @@ interface Data {
   user: User | null;
 }
 
-export async function handler(req: Request, ctx: HandlerContext<Data, State>) {
+export async function handler(_req: Request, ctx: HandlerContext<Data, State>) {
   const [game, user] = await Promise.all([
     getGame(ctx.params.id),
     getUserBySession(ctx.state.session ?? ""),

@@ -22,7 +22,7 @@ interface SignedInData {
   games: Game[];
 }
 
-export async function handler(req: Request, ctx: HandlerContext<Data, State>) {
+export async function handler(_req: Request, ctx: HandlerContext<Data, State>) {
   if (!ctx.state.session) return ctx.render(null);
 
   const [user, users] = await Promise.all([

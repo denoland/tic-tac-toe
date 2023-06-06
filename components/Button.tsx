@@ -1,6 +1,6 @@
 import { JSX } from "preact";
 import { css, keyframes } from "twind/css";
-import { apply, tw } from "twind";
+import { tw } from "twind";
 
 const buttonClasses =
   "px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded";
