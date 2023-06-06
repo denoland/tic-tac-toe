@@ -4,22 +4,9 @@
  * synchronization between clients.
  */
 
-import { Game, OauthSession, User } from "./types.ts";
+import { Game, User } from "./types.ts";
 
 const kv = await Deno.openKv();
-
-export async function getAndDeleteOauthSession(
-  session: string,
-): Promise<OauthSession | null> {
-  const res = await kv.get<OauthSession>(["oauth_sessions", session]);
-  if (res.versionstamp === null) return null;
-  await kv.delete(["oauth_sessions", session]);
-  return res.value;
-}
-
-export async function setOauthSession(session: string, value: OauthSession) {
-  await kv.set(["oauth_sessions", session], value);
-}
 
 export async function setUserWithSession(user: User, session: string) {
   await kv.atomic()

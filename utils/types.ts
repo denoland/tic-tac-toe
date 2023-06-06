@@ -9,11 +9,6 @@ export interface User {
   avatarUrl: string;
 }
 
-export interface OauthSession {
-  state: string;
-  codeVerifier: string;
-}
-
 export type GameGrid = [
   string | null,
   string | null,
