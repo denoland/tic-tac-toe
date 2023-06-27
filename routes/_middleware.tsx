@@ -8,7 +8,7 @@ export async function handler(
 ) {
   const url = new URL(req.url);
   if (url.pathname === "") return await ctx.next();
-  ctx.state.session = getSessionId(req);
+  ctx.state.session = await getSessionId(req);
   const resp = await ctx.next();
   return resp;
 }

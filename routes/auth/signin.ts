@@ -1,9 +1,9 @@
 import { Handlers } from "$fresh/server.ts";
 import { signIn } from "kv_oauth";
-import { client } from "🛠️/kv_oauth.ts";
+import { oauth2Client } from "🛠️/oauth2_client.ts";
 
 export const handler: Handlers = {
   async GET(req) {
-    return await signIn(req, client);
+    return await signIn(req, oauth2Client);
   },
 };

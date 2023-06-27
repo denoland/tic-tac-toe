@@ -4,8 +4,8 @@ import { deleteSession } from "🛠️/db.ts";
 
 export const handler: Handlers = {
   async GET(req) {
-    const session = getSessionId(req);
-    await deleteSession(session);
+    const sessionId = await getSessionId(req);
+    if (sessionId !== undefined) await deleteSession(sessionId);
 
     return await signOut(req);
   },
