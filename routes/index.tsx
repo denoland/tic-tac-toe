@@ -96,7 +96,7 @@ function UserListItem(props: { user: User }) {
       <form action={startPath} method="POST">
         <ButtonLink
           type="button"
-          class="my-2"
+          class="my-2 block"
           /** @ts-ignore */
           onclick="event.preventDefault();this.closest('form').submit();"
           href={startPath}
