@@ -1,7 +1,6 @@
 /**
  * This module implements the DB layer for the Tic Tac Toe game. It uses Deno's
- * key-value store to store data, and uses BroadcastChannel to perform real-time
- * synchronization between clients.
+ * key-value store to store data and perform real-time synchronization between clients.
  */
 
 import { Game, OauthSession, User } from "./types.ts";
@@ -70,21 +69,9 @@ export async function setGame(game: Game, versionstamp?: string) {
     .set(["games", game.id], game)
     .set(["games_by_user", game.initiator.id, game.id], game)
     .set(["games_by_user", game.opponent.id, game.id], game)
+    .set(["games_by_user_updated", game.initiator.id], true)
+    .set(["games_by_user_updated", game.opponent.id], true)
     .commit();
-  if (res.ok) {
-    console.log("broadcasting game update", game.id, res.versionstamp);
-    const bc1 = new BroadcastChannel(`game/${game.id}`);
-    bc1.postMessage({ game, versionstamp: res!.versionstamp });
-    const bc2 = new BroadcastChannel(`games_by_user/${game.initiator.id}`);
-    bc2.postMessage({ game, versionstamp: res!.versionstamp });
-    const bc3 = new BroadcastChannel(`games_by_user/${game.opponent.id}`);
-    bc3.postMessage({ game, versionstamp: res!.versionstamp });
-    setTimeout(() => {
-      bc1.close();
-      bc2.close();
-      bc3.close();
-    }, 5);
-  }
   return res.ok;
 }
 
@@ -112,29 +99,26 @@ export function subscribeGame(
   id: string,
   cb: (game: Game) => void,
 ): () => void {
-  const bc = new BroadcastChannel(`game/${id}`);
-  let closed = false;
-  let lastVersionstamp = "";
-  getGameWithVersionstamp(id).then((res) => {
-    if (closed) return;
-    if (res) {
-      lastVersionstamp = res[1];
-      cb(res[0]);
+  const stream = kv.watch([["games", id]]);
+  const reader = stream.getReader();
+
+  (async () => {
+    while (true) {
+      const x = await reader.read();
+      if (x.done) {
+        console.log("subscribeGame: Subscription stream closed");
+        return;
+      }
+
+      const [game] = x.value!;
+      if (game.value) {
+        cb(game.value as Game);
+      }
     }
-  });
-  bc.onmessage = (ev) => {
-    console.log(
-      "received game update",
-      id,
-      ev.data.versionstamp,
-      `(last: ${lastVersionstamp})`,
-    );
-    if (lastVersionstamp >= ev.data.versionstamp) return;
-    cb(ev.data.game);
-  };
+  })();
+
   return () => {
-    closed = true;
-    bc.close();
+    reader.cancel();
   };
 }
 
@@ -142,35 +126,23 @@ export function subscribeGamesByPlayer(
   userId: string,
   cb: (list: Game[]) => void,
 ) {
-  const bc = new BroadcastChannel(`games_by_user/${userId}`);
-  let closed = false;
-  listGamesByPlayer(userId).then((list) => {
-    if (closed) return;
-    cb(list);
-    const lastVersionstamps = new Map<string, string>();
-    bc.onmessage = (e) => {
-      const { game, versionstamp } = e.data;
-      console.log(
-        "received games_by_user update",
-        game.id,
-        versionstamp,
-        `(last: ${lastVersionstamps.get(game.id)})`,
-      );
-      if ((lastVersionstamps.get(game.id) ?? "") >= versionstamp) return;
-      lastVersionstamps.set(game.id, versionstamp);
-      for (let i = 0; i < list.length; i++) {
-        if (list[i].id === game.id) {
-          list[i] = game;
-          cb(list);
-          return;
-        }
+  const stream = kv.watch([["games_by_user_updated", userId]]);
+  const reader = stream.getReader();
+
+  (async () => {
+    while (true) {
+      const x = await reader.read();
+      if (x.done) {
+        console.log("subscribeGamesByPlayer: Subscription stream closed");
+        return;
       }
-      list.push(game);
-      cb(list);
-    };
-  });
+
+      const games = await listGamesByPlayer(userId);
+      cb(games);
+    }
+  })();
+
   return () => {
-    closed = true;
-    bc.close();
+    reader.cancel();
   };
 }
