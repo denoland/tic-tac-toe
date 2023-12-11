@@ -2,13 +2,12 @@
 
 This is a global, real-time multiplayer Tic-Tac-Toe game written in Deno. It
 persists game states in a Deno KV store, and synchronizes game state between
-clients using BroadcastChannel.
+clients using the `watch()` feature of Deno KV.
 
 ## Features
 
 - Real-time multiplayer game
-- Global persistent game state using Deno KV
-- Synchronizes game state between clients using BroadcastChannel
+- Persistent game state and coordination using Deno KV
 - Uses GitHub OAuth for authentication
 
 This project is hosted on Deno Deploy:
